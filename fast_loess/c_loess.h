@@ -1,11 +1,9 @@
 #ifndef c_loess_h__
 #define c_loess_h__
 
+#include <stdint.h>
 #include <stdio.h>
-#include <tchar.h>
-#include <vector>
 #include <algorithm>
-#include <iostream>
 
 struct WindowIterator
 {
@@ -136,34 +134,31 @@ float calculate(const WindowIterator &window_first, const WindowIterator &window
 	return g;
 }
 
-std::vector<float> loess(const std::vector<float> &soretd_x, const std::vector<float> &soretd_y, const std::vector<float> &sample_x, uint32_t neighbours)
+bool loess(const float *soretd_x_begin, const uint32_t soretd_x_size, const float *soretd_y_begin, const float *sample_x_begin, const uint32_t num_samples, uint32_t neighbours, float *g)
 {
-	if(soretd_x.size() != soretd_y.size() || soretd_x.size() < neighbours || neighbours == 0)
-		return {};
+	if(!soretd_x_begin || !soretd_y_begin || neighbours == 0)
+		return false;
 
-	if(neighbours > soretd_x.size())
-		neighbours = soretd_x.size();
+	if(neighbours > soretd_x_size)
+		neighbours = soretd_x_size;
 	--neighbours;
 
-	std::vector<float> distances(soretd_x.size(), 0.0f);
-	WindowIterator window_first{soretd_x.data(), soretd_y.data(), distances.data()};
+	float *distances = new float[soretd_x_size];
+	float *weights = new float[neighbours + 1];
+
+	WindowIterator window_first{soretd_x_begin, soretd_y_begin, distances};
 	WindowIterator window_last(window_first + neighbours);
 
-	const WindowIterator last{&*(soretd_x.cend() - 1), nullptr, nullptr};
+	const WindowIterator last{&*(soretd_x_begin + soretd_x_size - 1), nullptr, nullptr};
 
-	std::vector<float> weights(neighbours + 1, 0.0f);
-	std::vector<float> g(sample_x.size(), 0.0f);
-
-	auto g_it = g.begin();
-	for(const auto& sample : sample_x)
+	for(uint32_t iteration = 0; iteration < num_samples; ++iteration)
 	{
-		find_neighbours(window_first, window_last, last, neighbours, sample);
+		find_neighbours(window_first, window_last, last, neighbours, sample_x_begin[iteration]);
 
-		*g_it = calculate(window_first, window_last, weights.data());
-		++g_it;
+		g[iteration] = calculate(window_first, window_last, weights);
 	}
 
-	return g;
+	return true;
 }
 
 #endif // c_loess_h__
