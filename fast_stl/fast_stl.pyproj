@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>0c60f91f-fc88-4930-9e8d-aa48d5c3ec2e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>fast_stl.py</StartupFile>
+    <StartupFile>stl.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -24,7 +24,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="fast_stl.py" />
+    <Compile Include="stl.py" />
+    <Compile Include="tests\smooth_test.py" />
+    <Compile Include="tests\__init__.py" />
     <Compile Include="__init__.py">
       <SubType>Code</SubType>
     </Compile>
@@ -35,6 +37,9 @@
       <Project>{0dcc6d1f-38a7-4065-9aae-72704329d46e}</Project>
       <Private>True</Private>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="tests\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
