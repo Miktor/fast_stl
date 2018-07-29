@@ -7,7 +7,7 @@
     <StartupFile>tests\smooth_test.py</StartupFile>
     <SearchPath>
     </SearchPath>
-    <WorkingDirectory>..\..\</WorkingDirectory>
+    <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>fast_stl</Name>
     <RootNamespace>fast_stl</RootNamespace>
