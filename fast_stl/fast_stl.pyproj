@@ -4,10 +4,10 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>0c60f91f-fc88-4930-9e8d-aa48d5c3ec2e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>smooth.py</StartupFile>
+    <StartupFile>tests\smooth_test.py</StartupFile>
     <SearchPath>
     </SearchPath>
-    <WorkingDirectory>.</WorkingDirectory>
+    <WorkingDirectory>..\..\</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>fast_stl</Name>
     <RootNamespace>fast_stl</RootNamespace>
