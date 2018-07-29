@@ -134,31 +134,34 @@ float calculate(const WindowIterator &window_first, const WindowIterator &window
 	return g;
 }
 
-bool loess(const float *soretd_x_begin, const uint32_t soretd_x_size, const float *soretd_y_begin, const float *sample_x_begin, const uint32_t num_samples, uint32_t neighbours, float *g)
-{
-	if(!soretd_x_begin || !soretd_y_begin || neighbours == 0)
-		return false;
-
-	if(neighbours > soretd_x_size)
-		neighbours = soretd_x_size;
-	--neighbours;
-
-	float *distances = new float[soretd_x_size];
-	float *weights = new float[neighbours + 1];
-
-	WindowIterator window_first{soretd_x_begin, soretd_y_begin, distances};
-	WindowIterator window_last(window_first + neighbours);
-
-	const WindowIterator last{&*(soretd_x_begin + soretd_x_size - 1), nullptr, nullptr};
-
-	for(uint32_t iteration = 0; iteration < num_samples; ++iteration)
+#ifdef __cplusplus
+extern "C" {
+#endif
+	bool loess(const float *soretd_x_begin, const uint32_t soretd_x_size, const float *soretd_y_begin, const float *sample_x_begin, const uint32_t num_samples, uint32_t neighbours, float *g)
 	{
-		find_neighbours(window_first, window_last, last, neighbours, sample_x_begin[iteration]);
+		if(!soretd_x_begin || !soretd_y_begin || neighbours == 0)
+			return false;
 
-		g[iteration] = calculate(window_first, window_last, weights);
+		if(neighbours > soretd_x_size)
+			neighbours = soretd_x_size;
+		--neighbours;
+
+		float *distances = new float[soretd_x_size];
+		float *weights = new float[neighbours + 1];
+
+		WindowIterator window_first{soretd_x_begin, soretd_y_begin, distances};
+		WindowIterator window_last(window_first + neighbours);
+
+		const WindowIterator last{&*(soretd_x_begin + soretd_x_size - 1), nullptr, nullptr};
+
+		for(uint32_t iteration = 0; iteration < num_samples; ++iteration)
+		{
+			find_neighbours(window_first, window_last, last, neighbours, sample_x_begin[iteration]);
+
+			g[iteration] = calculate(window_first, window_last, weights);
+		}
+
+		return true;
 	}
-
-	return true;
 }
-
 #endif // c_loess_h__

@@ -11,6 +11,10 @@
     <OutputPath>.</OutputPath>
     <Name>fast_stl</Name>
     <RootNamespace>fast_stl</RootNamespace>
+    <InterpreterId>Global|PythonCore|3.6-32</InterpreterId>
+    <IsWindowsApplication>True</IsWindowsApplication>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,6 +34,11 @@
       <Project>{0dcc6d1f-38a7-4065-9aae-72704329d46e}</Project>
       <Private>True</Private>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda36-64" />
+    <InterpreterReference Include="Global|PythonCore|3.6" />
+    <InterpreterReference Include="Global|PythonCore|3.6-32" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
