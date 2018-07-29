@@ -15,12 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="c_loess.h">
+    <ClInclude Include="loess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="fast_loess.cpp">
+    <ClCompile Include="fast_stl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -2,7 +2,7 @@
 #include <numpy\ndarraytypes.h>
 #include <numpy\arrayobject.h>
 #include <numpy\npy_math.h>
-#include "c_loess.h"
+#include "loess.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,7 +11,7 @@ extern "C" {
 /*
 	* Implements an example function.
 	*/
-PyDoc_STRVAR(fast_loess_doc, "fast_loess(soretd_x, soretd_y, samples, neighbours)\
+PyDoc_STRVAR(fast_loess_doc, "loess(soretd_x, soretd_y, samples, neighbours)\
 \
 Example function");
 
@@ -127,7 +127,7 @@ Example function");
 	 * List of functions to add to fast_loess in exec_fast_loess().
 	 */
 	static PyMethodDef fast_loess_functions[] = {
-		{ "example", (PyCFunction)fast_loess, METH_VARARGS, fast_loess_doc },
+		{ "loess", (PyCFunction)fast_loess, METH_VARARGS, fast_loess_doc },
 		{ NULL, NULL, 0, NULL } /* marks end of array */
 	};
 
@@ -140,17 +140,16 @@ Example function");
 		PyModule_AddFunctions(module, fast_loess_functions);
 
 		PyModule_AddStringConstant(module, "__author__", "Dmitry Gladky");
-		PyModule_AddStringConstant(module, "__version__", "1.0.0");
+		PyModule_AddStringConstant(module, "__version__", "0.0.1");
 		PyModule_AddIntConstant(module, "year", 2018);
 
 		return 0; /* success */
 	}
 
 	/*
-	 * Documentation for fast_loess.
+	 * Documentation for fast_stl_impl.
 	 */
-
-	PyDoc_STRVAR(fast_stl_doc, "The fast_stl module");
+	PyDoc_STRVAR(fast_stl_doc, "The fast_stl_impl module");
 
 
 	static PyModuleDef_Slot fast_loess_slots[] = {
@@ -158,9 +157,9 @@ Example function");
 		{ 0, NULL }
 	};
 
-	static PyModuleDef fast_loess_def = {
+	static PyModuleDef fast_stl_impl_def = {
 		PyModuleDef_HEAD_INIT,
-		"fast_loess",
+		"fast_stl_impl",
 		fast_stl_doc,
 		0,              /* m_size */
 		NULL,           /* m_methods */
@@ -172,7 +171,6 @@ Example function");
 
 	PyMODINIT_FUNC PyInit_fast_loess()
 	{
-		return PyModuleDef_Init(&fast_loess_def);
+		return PyModuleDef_Init(&fast_stl_impl_def);
 	}
-
 }

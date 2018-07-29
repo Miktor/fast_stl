@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0DCC6D1F-38A7-4065-9AAE-72704329D46E}</ProjectGuid>
-    <RootNamespace>fast_loess</RootNamespace>
+    <RootNamespace>fast_stl</RootNamespace>
     <PythonVersion>3.6</PythonVersion>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -94,34 +94,34 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>fast_loess$(PythonDebugSuffix)</TargetName>
+    <TargetName>fast_stl$(PythonDebugSuffix)</TargetName>
     <TargetExt>.pyd</TargetExt>
     <LocalDebuggerCommand>$(PythonDExe)</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import fast_loess'); import fast_loess"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import fast_stl'); import fast_stl"</LocalDebuggerCommandArguments>
     <LocalDebuggerEnvironment>PYTHONPATH=$(OutDir)</LocalDebuggerEnvironment>
     <DebuggerFlavor>$(DefaultDebuggerFlavor)</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>fast_loess</TargetName>
+    <TargetName>fast_stl</TargetName>
     <TargetExt>.pyd</TargetExt>
     <LocalDebuggerCommand>$(PythonExe)</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import fast_loess'); import fast_loess"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import fast_stl'); import fast_stl"</LocalDebuggerCommandArguments>
     <LocalDebuggerEnvironment>PYTHONPATH=$(OutDir)</LocalDebuggerEnvironment>
     <DebuggerFlavor>$(DefaultDebuggerFlavor)</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>fast_loess$(PythonDebugSuffix)</TargetName>
+    <TargetName>fast_stl$(PythonDebugSuffix)</TargetName>
     <TargetExt>.pyd</TargetExt>
     <LocalDebuggerCommand>$(PythonDExe)</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import fast_loess'); import fast_loess"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import fast_stl'); import fast_stl"</LocalDebuggerCommandArguments>
     <LocalDebuggerEnvironment>PYTHONPATH=$(OutDir)</LocalDebuggerEnvironment>
     <DebuggerFlavor>$(DefaultDebuggerFlavor)</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>fast_loess</TargetName>
+    <TargetName>fast_stl</TargetName>
     <TargetExt>.pyd</TargetExt>
     <LocalDebuggerCommand>$(PythonExe)</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import fast_loess'); import fast_loess"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import fast_stl'); import fast_stl"</LocalDebuggerCommandArguments>
     <LocalDebuggerEnvironment>PYTHONPATH=$(OutDir)</LocalDebuggerEnvironment>
     <DebuggerFlavor>$(DefaultDebuggerFlavor)</DebuggerFlavor>
   </PropertyGroup>
@@ -190,10 +190,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="fast_loess.cpp" />
+    <ClCompile Include="fast_stl.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="c_loess.h" />
+    <ClInclude Include="loess.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
