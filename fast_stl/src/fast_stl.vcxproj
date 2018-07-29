@@ -118,12 +118,13 @@
     <DebuggerFlavor>$(DefaultDebuggerFlavor)</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>fast_stl</TargetName>
+    <TargetName>fast_stl_impl</TargetName>
     <TargetExt>.pyd</TargetExt>
     <LocalDebuggerCommand>$(PythonExe)</LocalDebuggerCommand>
     <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import fast_stl'); import fast_stl"</LocalDebuggerCommandArguments>
     <LocalDebuggerEnvironment>PYTHONPATH=$(OutDir)</LocalDebuggerEnvironment>
     <DebuggerFlavor>$(DefaultDebuggerFlavor)</DebuggerFlavor>
+    <OutDir>$(SolutionDir)..\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
