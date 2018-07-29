@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>0c60f91f-fc88-4930-9e8d-aa48d5c3ec2e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>stl.py</StartupFile>
+    <StartupFile>smooth.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
