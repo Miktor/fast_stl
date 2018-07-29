@@ -53,5 +53,5 @@ setup(
     version='0.1',
     description='Time series decomposition written in C++',
     ext_modules=ext_modules(),
-    requires=['numpy>=1.13'],
+    requires=['numpy'],
 )

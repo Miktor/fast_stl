@@ -169,7 +169,7 @@ Example function");
 		NULL,           /* m_free */
 	};
 
-	PyMODINIT_FUNC PyInit_fast_loess()
+	PyMODINIT_FUNC PyInit_fast_stl_impl()
 	{
 		return PyModuleDef_Init(&fast_stl_impl_def);
 	}
