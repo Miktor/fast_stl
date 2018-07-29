@@ -20,7 +20,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="fast_stl.cpp">
+    <ClCompile Include="fast_stl_impl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
