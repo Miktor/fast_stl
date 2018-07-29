@@ -25,6 +25,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="stl.py" />
+    <Compile Include="smooth.py" />
     <Compile Include="tests\smooth_test.py" />
     <Compile Include="tests\__init__.py" />
     <Compile Include="__init__.py">
