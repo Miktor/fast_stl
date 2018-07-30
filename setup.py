@@ -29,11 +29,11 @@ def ext_modules():
     import numpy as np
 
     fast_stl_impl = Extension('fast_stl_impl',
-                              sources=['fast_stl/src/fast_stl.cpp'],
+                              sources=['fast_stl/src/fast_stl_impl.cpp'],
                               language='C++',
                               include_dirs=[np.get_include()],
                               library_dirs=[],
-                              extra_compile_args=['-O3'],
+                              extra_compile_args=[],
                               )
 
     return [fast_stl_impl]
