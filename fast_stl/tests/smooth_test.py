@@ -1,7 +1,28 @@
+from sys import getrefcount
 import unittest
+
 import numpy as np
 
 from fast_stl.smooth import kernel_smoothing
+
+class TestReferences(unittest.TestCase):
+    x = np.arange(0, 10, 1, dtype=np.float32)
+    y = np.arange(0, 10, 1, dtype=np.float32)
+    target_x = np.arange(0, 10, 1, dtype=np.float32, q = 7)
+    def test_many_samples(self):
+        x_ref_count = getrefcount(x)
+        y_ref_count = getrefcount(y)
+        target_x_ref_count = getrefcount(target_x)
+
+        self.assertEqual(x_ref_count, y_ref_count);
+        self.assertEqual(x_ref_count, target_x_ref_count);
+
+        g = kernel_smoothing(self.x, self.y, target_x=target_x, q=7)
+        
+        self.assertEqual(1, getrefcount(g));      
+        self.assertEqual(x_ref_count, getrefcount(x));        
+        self.assertEqual(y_ref_count, getrefcount(y));
+        self.assertEqual(target_x_ref_count, getrefcount(target_x));
 
 
 class TestInputs(unittest.TestCase):
@@ -32,7 +53,7 @@ class TestInputs(unittest.TestCase):
         g = kernel_smoothing(x, y, q=3)
         self.assertTrue(g is not None, msg="None output")
         self.assertEqual(len(g), len(x))
-
+        
 
 class TestUsage(unittest.TestCase):
     # Example from https://www.itl.nist.gov/div898/handbook/pmd/section1/dep/dep144.htm
