@@ -89,20 +89,6 @@ PyObject *fast_loess(PyObject *self, PyObject *args)
 		return NULL;
 	}
 
-	struct DataHelper
-	{
-		PyObject *soretd_x = NULL;
-		PyObject *soretd_y = NULL;
-		PyObject *samples = NULL;
-
-		~DataHelper()
-		{
-			Py_XDECREF(soretd_x);
-			Py_XDECREF(soretd_y);
-			Py_XDECREF(samples);
-		}
-	} data_helper{soretd_x, soretd_y, samples};
-
 	if(soretd_x == NULL || soretd_y == NULL || samples == NULL || neighbours < 1)
 	{
 		PyErr_SetString(PyExc_TypeError, "Couldn't parse the input arrays.");
@@ -118,8 +104,25 @@ PyObject *fast_loess(PyObject *self, PyObject *args)
 	if(soretd_x_array == NULL || soretd_y_array == NULL || samples_array == NULL)
 	{
 		PyErr_SetString(PyExc_TypeError, "Couldn't parse the input arrays.");
+		Py_XDECREF(soretd_x);
+		Py_XDECREF(soretd_y);
+		Py_XDECREF(samples);
 		return NULL;
 	}
+
+	struct DataHelper
+	{
+		PyObject *soretd_x = NULL;
+		PyObject *soretd_y = NULL;
+		PyObject *samples = NULL;
+
+		~DataHelper()
+		{
+			Py_DECREF(soretd_x);
+			Py_DECREF(soretd_y);
+			Py_DECREF(samples);
+		}
+	} const data_helper{soretd_x_array, soretd_y_array, samples_array};
 
 	const NPY_TYPES array_type = static_cast<NPY_TYPES>(PyArray_TYPE(soretd_x_array));
 	if(!(array_type == NPY_LONG ||
@@ -171,7 +174,7 @@ PyObject *fast_loess(PyObject *self, PyObject *args)
 	if(!loess_helper(array_type, soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array))
 	{
 		PyErr_SetString(PyExc_RuntimeError, "Failed to calculate loess.");
-		Py_XDECREF(out_array);
+		Py_DECREF(out_array);
 		return NULL;    /* return NULL indicates error */
 	}
 
