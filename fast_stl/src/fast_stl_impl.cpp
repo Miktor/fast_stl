@@ -44,7 +44,7 @@ namespace
 		switch(array_type)
 		{
 		case NPY_LONG:
-			result = loess_type_helper<NPY_ULONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
+			result = loess_type_helper<NPY_LONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
 			break;
 		case NPY_ULONG:
 			result = loess_type_helper<NPY_ULONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
@@ -95,16 +95,13 @@ PyObject *fast_loess(PyObject *self, PyObject *args)
 		PyObject *soretd_y = NULL;
 		PyObject *samples = NULL;
 
-		PyObject *out_array = NULL;
-
 		~DataHelper()
 		{
 			Py_XDECREF(soretd_x);
 			Py_XDECREF(soretd_y);
 			Py_XDECREF(samples);
-			Py_XDECREF(out_array);
 		}
-	} data_helper{soretd_x, soretd_y, samples, nullptr};
+	} data_helper{soretd_x, soretd_y, samples};
 
 	if(soretd_x == NULL || soretd_y == NULL || samples == NULL || neighbours < 1)
 	{
@@ -170,11 +167,11 @@ PyObject *fast_loess(PyObject *self, PyObject *args)
 		PyErr_SetString(PyExc_RuntimeError, "Couldn't build output array.");
 		return NULL;
 	}		
-	data_helper.out_array = out_array;
 
 	if(!loess_helper(array_type, soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array))
 	{
 		PyErr_SetString(PyExc_RuntimeError, "Failed to calculate loess.");
+		Py_XDECREF(out_array);
 		return NULL;    /* return NULL indicates error */
 	}
 

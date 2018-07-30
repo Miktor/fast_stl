@@ -62,7 +62,7 @@ void find_neighbours(WindowIterator<T> &window_first, WindowIterator<T> &window_
 	}
 
 	// move window so pivot inside
-	while(*window_last.x < pivot)
+	while(*window_last.x < pivot && window_last < last)
 	{
 		++window_first;
 		++window_last;
