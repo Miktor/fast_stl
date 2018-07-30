@@ -5,47 +5,67 @@
 #include <numpy\npy_math.h>
 #include "loess.h"
 
-template <NPY_TYPES Type>
-struct PythonTypeHelper {};
+namespace
+{
+	template <NPY_TYPES Type>
+	struct PythonTypeHelper {};
 
-template <>
-struct PythonTypeHelper<NPY_FLOAT>
-{
-	typedef float Type;
-};
-template <>
-struct PythonTypeHelper<NPY_CFLOAT>
-{
-	typedef float Type;
-};
-template <>
-struct PythonTypeHelper<NPY_DOUBLE>
-{
-	typedef double Type;
-};
-template <>
-struct PythonTypeHelper<NPY_CDOUBLE>
-{
-	typedef double Type;
-};
+	template <> struct PythonTypeHelper<NPY_FLOAT>		{ typedef npy_float Type; };
+	template <> struct PythonTypeHelper<NPY_DOUBLE>		{ typedef npy_double Type; };
+	template <> struct PythonTypeHelper<NPY_LONG>		{ typedef npy_long Type; };
+	template <> struct PythonTypeHelper<NPY_ULONG>		{ typedef npy_ulong Type; };
+	template <> struct PythonTypeHelper<NPY_LONGLONG>	{ typedef npy_longlong Type; };
+	template <> struct PythonTypeHelper<NPY_ULONGLONG>	{ typedef npy_ulonglong Type; };
 
-template <NPY_TYPES NpType>
-bool loess_helper(PyObject *soretd_x_array, const uint32_t soretd_x_length,
-		   PyObject *soretd_y_array, 
-		   PyObject *samples_array, const uint32_t samples_length, 
-		   const uint32_t neighbours, 
-		   PyObject *out_array)
-{
-	typedef PythonTypeHelper<NpType>::Type Type;
+	template <NPY_TYPES NpType>
+	bool loess_type_helper(PyObject *soretd_x_array, const uint32_t soretd_x_length,
+					  PyObject *soretd_y_array,
+					  PyObject *samples_array, const uint32_t samples_length,
+					  const uint32_t neighbours,
+					  PyObject *out_array)
+	{
+		typedef PythonTypeHelper<NpType>::Type Type;
 
-	Type *out_data = (Type*)PyArray_DATA(out_array);
-	Type *soretd_x_array_data = (Type*)PyArray_DATA(soretd_x_array);
-	Type *soretd_y_array_data = (Type*)PyArray_DATA(soretd_y_array);
-	Type *samples_array_data = (Type*)PyArray_DATA(samples_array);
+		Type *out_data = (Type*)PyArray_DATA(out_array);
+		Type *soretd_x_array_data = (Type*)PyArray_DATA(soretd_x_array);
+		Type *soretd_y_array_data = (Type*)PyArray_DATA(soretd_y_array);
+		Type *samples_array_data = (Type*)PyArray_DATA(samples_array);
 
-	return loess<Type>(soretd_x_array_data, soretd_x_length, soretd_y_array_data, samples_array_data, samples_length, neighbours, out_data);
+		return loess<Type>(soretd_x_array_data, soretd_x_length, soretd_y_array_data, samples_array_data, samples_length, neighbours, out_data);
+	}
+
+	bool loess_helper(NPY_TYPES array_type, PyObject *soretd_x_array, const uint32_t soretd_x_length,
+					  PyObject *soretd_y_array,
+					  PyObject *samples_array, const uint32_t samples_length,
+					  const uint32_t neighbours,
+					  PyObject *out_array)
+	{
+		bool result = false;
+		switch(array_type)
+		{
+		case NPY_LONG:
+			break;
+		case NPY_ULONG:
+			result = loess_type_helper<NPY_ULONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
+			break;
+		case NPY_LONGLONG:
+			result = loess_type_helper<NPY_LONGLONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
+			break;
+		case NPY_ULONGLONG:
+			result = loess_type_helper<NPY_ULONGLONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
+			break;
+		case NPY_FLOAT:
+			result = loess_type_helper<NPY_FLOAT>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
+			break;
+		case NPY_DOUBLE:
+			result = loess_type_helper<NPY_DOUBLE>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
+			break;
+		default:
+			break;
+		}
+		return result;
+	}
 }
-
 /*
 	* Implements an example function.
 	*/
@@ -94,23 +114,24 @@ PyObject *fast_loess(PyObject *self, PyObject *args)
 	if(PyArray_API == NULL)
 		import_array();
 
-	const NPY_TYPES array_type = static_cast<NPY_TYPES>(PyArray_TYPE(soretd_x));
-	if(!(array_type == NPY_FLOAT ||
-		array_type == NPY_CFLOAT ||
-		array_type == NPY_DOUBLE ||
-		array_type == NPY_CDOUBLE))
-	{
-		PyErr_SetString(PyExc_TypeError, "Invalid array types.");
-		return NULL;
-	}
-
-	PyObject *soretd_x_array = PyArray_FROM_OTF(soretd_x, array_type, NPY_IN_ARRAY);
-	PyObject *soretd_y_array = PyArray_FROM_OTF(soretd_y, array_type, NPY_IN_ARRAY);
-	PyObject *samples_array = PyArray_FROM_OTF(samples, array_type, NPY_IN_ARRAY);
-
+	PyObject *soretd_x_array = PyArray_FROM_OF(soretd_x, NPY_IN_ARRAY);
+	PyObject *soretd_y_array = PyArray_FROM_OF(soretd_y, NPY_IN_ARRAY);
+	PyObject *samples_array = PyArray_FROM_OF(samples, NPY_IN_ARRAY);
 	if(soretd_x_array == NULL || soretd_y_array == NULL || samples_array == NULL)
 	{
 		PyErr_SetString(PyExc_TypeError, "Couldn't parse the input arrays.");
+		return NULL;
+	}
+
+	const NPY_TYPES array_type = static_cast<NPY_TYPES>(PyArray_TYPE(soretd_x_array));
+	if(!(array_type == NPY_LONG ||
+		 array_type == NPY_ULONG ||
+		 array_type == NPY_LONGLONG ||
+		 array_type == NPY_ULONGLONG ||
+		 array_type == NPY_FLOAT ||
+		 array_type == NPY_DOUBLE))
+	{
+		PyErr_SetString(PyExc_TypeError, "Invalid array types.");
 		return NULL;
 	}
 
@@ -150,26 +171,7 @@ PyObject *fast_loess(PyObject *self, PyObject *args)
 	}		
 	data_helper.out_array = out_array;
 
-	bool result = false;
-	switch(array_type)
-	{
-	case NPY_FLOAT:
-		result = loess_helper<NPY_FLOAT>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
-		break;
-	case NPY_CFLOAT:
-		result = loess_helper<NPY_CFLOAT>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
-		break;
-	case NPY_DOUBLE:
-		result = loess_helper<NPY_DOUBLE>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
-		break;
-	case NPY_CDOUBLE:
-		result = loess_helper<NPY_CDOUBLE>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
-		break;
-	default:
-		break;
-	}
-
-	if(!result)
+	if(!loess_helper(array_type, soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array))
 	{
 		PyErr_SetString(PyExc_RuntimeError, "Failed to calculate loess.");
 		return NULL;    /* return NULL indicates error */

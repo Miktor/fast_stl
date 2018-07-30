@@ -110,7 +110,7 @@ void find_neighbours(WindowIterator<T> &window_first, WindowIterator<T> &window_
 template <typename T>
 T calculate(const WindowIterator<T> &window_first, const WindowIterator<T> &window_last, T *weights)
 {
-	T weight_sum{0.0f};
+	T weight_sum{0};
 
 	T *current_weight = weights;
 	const T max_distance = std::max(*window_first.distance, *(window_last.distance));
@@ -120,7 +120,7 @@ T calculate(const WindowIterator<T> &window_first, const WindowIterator<T> &wind
 		T &weight = *current_weight;
 
 		const T scaled_distance = distance / max_distance;
-		weight = std::min(T{1.0}, std::max(T{0.0}, scaled_distance));
+		weight = std::min(T{1}, std::max(T{0}, scaled_distance));
 
 		weight = (1 - weight * weight  * weight); // (1 - weight ^ 3)
 		weight = weight * weight * weight; // (1 - weight ^ 3) ^ 3
