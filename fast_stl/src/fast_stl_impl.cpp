@@ -44,6 +44,7 @@ namespace
 		switch(array_type)
 		{
 		case NPY_LONG:
+			result = loess_type_helper<NPY_ULONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
 			break;
 		case NPY_ULONG:
 			result = loess_type_helper<NPY_ULONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
