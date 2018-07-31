@@ -112,9 +112,9 @@ PyObject *fast_loess(PyObject *self, PyObject *args)
 
 	struct DataHelper
 	{
-		PyObject *soretd_x = NULL;
-		PyObject *soretd_y = NULL;
-		PyObject *samples = NULL;
+		PyObject *soretd_x;
+		PyObject *soretd_y;
+		PyObject *samples;
 
 		~DataHelper()
 		{

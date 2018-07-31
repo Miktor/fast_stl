@@ -1,5 +1,5 @@
 import numpy as np
-import fast_stl_impl as impl
+import fast_stl.fast_stl_impl as impl
 
 __all__ = ['kernel_smoothing']
 
