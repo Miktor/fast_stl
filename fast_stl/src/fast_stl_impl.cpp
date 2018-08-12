@@ -19,10 +19,11 @@ namespace
 
 	template <NPY_TYPES NpType>
 	bool loess_type_helper(PyObject *soretd_x_array, const uint32_t soretd_x_length,
-					  PyObject *soretd_y_array,
-					  PyObject *samples_array, const uint32_t samples_length,
-					  const uint32_t neighbours,
-					  PyObject *out_array)
+						   PyObject *soretd_y_array,
+						   PyObject *samples_array, const uint32_t samples_length,
+						   const uint32_t neighbours,
+						   PyObject *out_array,
+						   PyObject *opt_weights_scale)
 	{
 		typedef PythonTypeHelper<NpType>::Type Type;
 
@@ -30,41 +31,92 @@ namespace
 		Type *soretd_x_array_data = (Type*)PyArray_DATA(soretd_x_array);
 		Type *soretd_y_array_data = (Type*)PyArray_DATA(soretd_y_array);
 		Type *samples_array_data = (Type*)PyArray_DATA(samples_array);
+		Type *opt_weights_scale_data = (Type*)PyArray_DATA(opt_weights_scale);
 
-		return loess<Type>(soretd_x_array_data, soretd_x_length, soretd_y_array_data, samples_array_data, samples_length, neighbours, out_data);
+		return loess<Type>(soretd_x_array_data, soretd_x_length, soretd_y_array_data, samples_array_data, samples_length, neighbours, out_data, opt_weights_scale_data);
 	}
 
 	bool loess_helper(NPY_TYPES array_type, PyObject *soretd_x_array, const uint32_t soretd_x_length,
 					  PyObject *soretd_y_array,
 					  PyObject *samples_array, const uint32_t samples_length,
 					  const uint32_t neighbours,
-					  PyObject *out_array)
+					  PyObject *out_array,
+					  PyObject *opt_weights_scale)
 	{
 		bool result = false;
 		switch(array_type)
 		{
 		case NPY_LONG:
-			result = loess_type_helper<NPY_LONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
+			result = loess_type_helper<NPY_LONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array, opt_weights_scale);
 			break;
 		case NPY_ULONG:
-			result = loess_type_helper<NPY_ULONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
+			result = loess_type_helper<NPY_ULONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array, opt_weights_scale);
 			break;
 		case NPY_LONGLONG:
-			result = loess_type_helper<NPY_LONGLONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
+			result = loess_type_helper<NPY_LONGLONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array, opt_weights_scale);
 			break;
 		case NPY_ULONGLONG:
-			result = loess_type_helper<NPY_ULONGLONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
+			result = loess_type_helper<NPY_ULONGLONG>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array, opt_weights_scale);
 			break;
 		case NPY_FLOAT:
-			result = loess_type_helper<NPY_FLOAT>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
+			result = loess_type_helper<NPY_FLOAT>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array, opt_weights_scale);
 			break;
 		case NPY_DOUBLE:
-			result = loess_type_helper<NPY_DOUBLE>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array);
+			result = loess_type_helper<NPY_DOUBLE>(soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array, opt_weights_scale);
 			break;
 		default:
 			break;
 		}
 		return result;
+	}
+
+	PyObject * GetArray(PyObject * object, int &in_out_length, NPY_TYPES *out_type = nullptr)
+	{
+		if(!object)
+			return nullptr;
+
+		PyObject *array = PyArray_FROM_OF(object, NPY_IN_ARRAY);
+		if(!array)
+		{
+			PyErr_SetString(PyExc_TypeError, "Couldn't parse the input arrays.");
+			return nullptr;
+		}
+
+		struct DataHelper
+		{
+			PyObject *array = nullptr;
+			~DataHelper()
+			{
+				Py_DECREF(array);
+			}
+		} array_helper{array};
+
+		if(out_type)
+		{
+			const NPY_TYPES array_type = static_cast<NPY_TYPES>(PyArray_TYPE(array));		
+			*out_type = array_type;
+		}		
+
+		const int array_dim = (int)PyArray_NDIM(array);
+		if(array_dim != 1)
+		{
+			PyErr_SetString(PyExc_TypeError, "The array must be 1D.");
+			return nullptr;
+		}
+
+		const int array_length = (int)PyArray_DIM(array, 0);
+		if(in_out_length && array_length != in_out_length)
+		{
+			PyErr_SetString(PyExc_TypeError, "Invalid array length.");
+			return nullptr;
+		}
+		else
+			in_out_length = array_length;
+
+		// do not decref if everything ok
+		array_helper.array = nullptr;
+
+		return array;
 	}
 }
 /*
@@ -74,108 +126,109 @@ PyDoc_STRVAR(fast_loess_doc, "loess(soretd_x, soretd_y, samples, neighbours)\
 \
 Example function");
 
+
 PyObject *fast_loess(PyObject *self, PyObject *args)
 {
 	/* Shared references that do not need Py_DECREF before returning. */
 	int neighbours = 0;
-	PyObject *soretd_x = NULL;
-	PyObject *soretd_y = NULL;
-	PyObject *samples = NULL;
+	PyObject *soretd_x = nullptr;
+	PyObject *soretd_y = nullptr;
+	PyObject *samples = nullptr;
+	PyObject *weights = nullptr;
 
 	/* Parse positional and keyword arguments */
-	static char* keywords[] = {"soretd_x", "soretd_y", "samples", "neighbours", NULL};
-	if(!PyArg_ParseTuple(args, "OOOI", &soretd_x, &soretd_y, &samples, &neighbours))
+	static char* keywords[] = {"soretd_x", "soretd_y", "samples", "neighbours", "weights", nullptr};
+	if(!PyArg_ParseTuple(args, "OOOI|O", &soretd_x, &soretd_y, &samples, &neighbours, weights))
 	{
-		return NULL;
+		return nullptr;
 	}
 
-	if(soretd_x == NULL || soretd_y == NULL || samples == NULL || neighbours < 1)
+	if(soretd_x == nullptr || soretd_y == nullptr || samples == nullptr || neighbours < 1)
 	{
 		PyErr_SetString(PyExc_TypeError, "Couldn't parse the input arrays.");
-		return NULL;
+		return nullptr;
 	}
 
-	if(PyArray_API == NULL)
+	if(PyArray_API == nullptr)
 		import_array();
-
-	PyObject *soretd_x_array = PyArray_FROM_OF(soretd_x, NPY_IN_ARRAY);
-	PyObject *soretd_y_array = PyArray_FROM_OF(soretd_y, NPY_IN_ARRAY);
-	PyObject *samples_array = PyArray_FROM_OF(samples, NPY_IN_ARRAY);
-	if(soretd_x_array == NULL || soretd_y_array == NULL || samples_array == NULL)
-	{
-		PyErr_SetString(PyExc_TypeError, "Couldn't parse the input arrays.");
-		Py_XDECREF(soretd_x);
-		Py_XDECREF(soretd_y);
-		Py_XDECREF(samples);
-		return NULL;
-	}
-
+	
 	struct DataHelper
 	{
-		PyObject *soretd_x = NULL;
-		PyObject *soretd_y = NULL;
-		PyObject *samples = NULL;
+		PyObject *soretd_x = nullptr;
+		PyObject *soretd_y = nullptr;
+		PyObject *samples = nullptr;
+
+		PyObject *weights = nullptr;
 
 		~DataHelper()
 		{
-			Py_DECREF(soretd_x);
-			Py_DECREF(soretd_y);
-			Py_DECREF(samples);
+			Py_XDECREF(soretd_x);
+			Py_XDECREF(soretd_y);
+			Py_XDECREF(samples);
 		}
-	} const data_helper{soretd_x_array, soretd_y_array, samples_array};
+	} data_helper{};
 
-	const NPY_TYPES array_type = static_cast<NPY_TYPES>(PyArray_TYPE(soretd_x_array));
-	if(!(array_type == NPY_LONG ||
-		 array_type == NPY_ULONG ||
-		 array_type == NPY_LONGLONG ||
-		 array_type == NPY_ULONGLONG ||
-		 array_type == NPY_FLOAT ||
-		 array_type == NPY_DOUBLE))
+	int soretd_x_array_length{0};
+	NPY_TYPES soretd_x_array_type{};
+	data_helper.soretd_x = GetArray(soretd_x, soretd_x_array_length, &soretd_x_array_type);
+	if(!data_helper.soretd_x || !soretd_x_array_length)
 	{
-		PyErr_SetString(PyExc_TypeError, "Invalid array types.");
-		return NULL;
+		PyErr_SetString(PyExc_TypeError, "Couldn't parse the X array.");
+		return nullptr;
 	}
 
-	/* Check that the input arrays are 1D. */
-	int soretd_x_dim = (int)PyArray_NDIM(soretd_x_array);
-	int soretd_y_dim = (int)PyArray_NDIM(soretd_y_array);
-	int samples_dim = (int)PyArray_NDIM(samples_array);
-	if(soretd_x_dim != 1 || soretd_y_dim != 1 || samples_dim != 1)
+	if(!(soretd_x_array_type == NPY_LONG ||
+		 soretd_x_array_type == NPY_ULONG ||
+		 soretd_x_array_type == NPY_LONGLONG ||
+		 soretd_x_array_type == NPY_ULONGLONG ||
+		 soretd_x_array_type == NPY_FLOAT ||
+		 soretd_x_array_type == NPY_DOUBLE))
 	{
-		PyErr_SetString(PyExc_TypeError, "The input arrays must be 1D.");
-		return NULL;
+		PyErr_SetString(PyExc_TypeError, "Invalid X array type.");
+		return nullptr;
 	}
 
-	/* Get the lengths of the outputs. */
-	int soretd_x_length = (int)PyArray_DIM(soretd_x_array, 0);
-	int soretd_y_length = (int)PyArray_DIM(soretd_y_array, 0);
-	if(soretd_x_length != soretd_y_length)
+	NPY_TYPES soretd_y_array_type{};
+	data_helper.soretd_y = GetArray(soretd_y, soretd_x_array_length, &soretd_y_array_type);
+	if(!data_helper.soretd_y)
 	{
-		PyErr_SetString(PyExc_TypeError, "sorted_x and sorted_y must be same length.");
-		return NULL;
+		PyErr_SetString(PyExc_TypeError, "Couldn't parse the Y array.");
+		return nullptr;
 	}
 
-	int samples_length = (int)PyArray_DIM(samples_array, 0);
-	if(samples_length < 1)
+	int samples_array_length{0};
+	NPY_TYPES samples_array_type{};
+	data_helper.samples = GetArray(soretd_y, samples_array_length, &samples_array_type);
+	if(!data_helper.samples)
 	{
-		PyErr_SetString(PyExc_TypeError, "samples should be not empty.");
-		return NULL;
+		PyErr_SetString(PyExc_TypeError, "Couldn't parse the samples array.");
+		return nullptr;
 	}
+
+	int weights_array_length{0};
+	NPY_TYPES weights_array_type{};
+	data_helper.weights = GetArray(weights, neighbours, &weights_array_type);
 
 	/* Build the output array. */
-	npy_intp dims{samples_length};
-	PyObject *out_array = PyArray_SimpleNew(1, &dims, array_type);
-	if(out_array == NULL)
+	npy_intp dims{samples_array_length};
+	PyObject *out_array = PyArray_SimpleNew(1, &dims, soretd_x_array_type);
+	if(out_array == nullptr)
 	{
 		PyErr_SetString(PyExc_RuntimeError, "Couldn't build output array.");
-		return NULL;
+		return nullptr;
 	}		
 
-	if(!loess_helper(array_type, soretd_x_array, soretd_x_length, soretd_y_array, samples_array, samples_length, neighbours, out_array))
+	if(!loess_helper(soretd_x_array_type,
+					 data_helper.soretd_x, soretd_x_array_length, 
+					 data_helper.soretd_y, 
+					 data_helper.samples, samples_array_length,
+					 neighbours, 
+					 out_array,
+					 data_helper.weights))
 	{
 		PyErr_SetString(PyExc_RuntimeError, "Failed to calculate loess.");
 		Py_DECREF(out_array);
-		return NULL;    /* return NULL indicates error */
+		return nullptr;    /* return nullptr indicates error */
 	}
 
 	return out_array;
@@ -186,7 +239,7 @@ PyObject *fast_loess(PyObject *self, PyObject *args)
 	*/
 static PyMethodDef fast_loess_functions[] = {
 	{ "loess", (PyCFunction)fast_loess, METH_VARARGS, fast_loess_doc },
-	{ NULL, NULL, 0, NULL } /* marks end of array */
+	{ nullptr, nullptr, 0, nullptr } /* marks end of array */
 };
 
 /*
@@ -212,7 +265,7 @@ PyDoc_STRVAR(fast_stl_doc, "The fast_stl_impl module");
 
 static PyModuleDef_Slot fast_loess_slots[] = {
 	{ Py_mod_exec, exec_fast_loess },
-	{ 0, NULL }
+	{ 0, nullptr }
 };
 
 static PyModuleDef fast_stl_impl_def = {
@@ -220,11 +273,11 @@ static PyModuleDef fast_stl_impl_def = {
 	"fast_stl_impl",
 	fast_stl_doc,
 	0,              /* m_size */
-	NULL,           /* m_methods */
+	nullptr,           /* m_methods */
 	fast_loess_slots,
-	NULL,           /* m_traverse */
-	NULL,           /* m_clear */
-	NULL,           /* m_free */
+	nullptr,           /* m_traverse */
+	nullptr,           /* m_clear */
+	nullptr,           /* m_free */
 };
 
 PyMODINIT_FUNC PyInit_fast_stl_impl()

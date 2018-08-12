@@ -31,7 +31,7 @@ def kernel_smoothing(x, y, target_x=None, q: int=None, f: float=None, weights=No
     if q is not None:
         assert q > 0, 'q must be greater than 0'
 
-    return impl.loess(x, y, target_x, q)
+    return impl.loess(x, y, target_x, q, weights)
 
 
 if __name__ == "__main__":    
