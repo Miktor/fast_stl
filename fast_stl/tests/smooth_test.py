@@ -5,24 +5,26 @@ import numpy as np
 
 from fast_stl.smooth import kernel_smoothing
 
+
 class TestReferences(unittest.TestCase):
     x = np.arange(0, 10, 1, dtype=np.float32)
     y = np.arange(0, 10, 1, dtype=np.float32)
-    target_x = np.arange(0, 10, 1, dtype=np.float32, q = 7)
+    target_x = np.arange(0, 10, 1, dtype=np.float32)
+
     def test_many_samples(self):
-        x_ref_count = getrefcount(x)
-        y_ref_count = getrefcount(y)
-        target_x_ref_count = getrefcount(target_x)
+        x_ref_count = getrefcount(self.x)
+        y_ref_count = getrefcount(self.y)
+        target_x_ref_count = getrefcount(self.target_x)
 
-        self.assertEqual(x_ref_count, y_ref_count);
-        self.assertEqual(x_ref_count, target_x_ref_count);
+        self.assertEqual(x_ref_count, y_ref_count)
+        self.assertEqual(x_ref_count, target_x_ref_count)
 
-        g = kernel_smoothing(self.x, self.y, target_x=target_x, q=7)
-        
-        self.assertEqual(1, getrefcount(g));      
-        self.assertEqual(x_ref_count, getrefcount(x));        
-        self.assertEqual(y_ref_count, getrefcount(y));
-        self.assertEqual(target_x_ref_count, getrefcount(target_x));
+        g = kernel_smoothing(self.x, self.y, target_x=self.target_x, q=7)
+
+        self.assertEqual(x_ref_count, getrefcount(self.x))
+        self.assertEqual(y_ref_count, getrefcount(self.y))
+        self.assertEqual(target_x_ref_count, getrefcount(self.target_x))
+        self.assertEqual(1, getrefcount(g))
 
 
 class TestInputs(unittest.TestCase):
